@@ -137,3 +137,28 @@ if ('IntersectionObserver' in window) {
 } else {
     revealEls.forEach(el => el.classList.add('is-visible'));
 }
+
+// Only one YouTube embed plays at a time: pause the others when one starts
+const ytFrames = document.querySelectorAll('iframe[src*="youtube"]');
+if (ytFrames.length > 1) {
+    const send = (frame, msg) => frame.contentWindow && frame.contentWindow.postMessage(JSON.stringify(msg), '*');
+
+    ytFrames.forEach((frame, i) => {
+        frame.addEventListener('load', () => {
+            send(frame, { event: 'listening', id: i, channel: 'widget' });
+            send(frame, { event: 'command', func: 'addEventListener', args: ['onStateChange'] });
+        });
+    });
+
+    window.addEventListener('message', e => {
+        if (!/youtube(-nocookie)?\.com$/.test(new URL(e.origin).hostname)) return;
+        let data;
+        try { data = JSON.parse(e.data); } catch { return; }
+        const playing = (data.event === 'onStateChange' && data.info === 1) ||
+            (data.event === 'infoDelivery' && data.info && data.info.playerState === 1);
+        if (!playing) return;
+        ytFrames.forEach(frame => {
+            if (frame.contentWindow !== e.source) send(frame, { event: 'command', func: 'pauseVideo', args: [] });
+        });
+    });
+}
