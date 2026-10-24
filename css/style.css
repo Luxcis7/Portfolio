@@ -42,6 +42,8 @@
 }
 
 html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
     scroll-padding-top: calc(var(--nav-h) + 16px);
 }
@@ -349,7 +351,7 @@ p {
 /* ============ Hero ============ */
 .hero {
     position: relative;
-    min-height: 100vh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
     padding: calc(var(--nav-h) + 60px) 0 90px;
@@ -1424,5 +1426,146 @@ p {
 @media (max-width: 960px) {
     .hero__chip--d {
         left: -16px;
+    }
+}
+
+
+/* ============ Stadium wall: the hero's jersey reel ============ */
+.stadium {
+    position: absolute;
+    inset: -12% -18% -12% -6%;
+    z-index: 0;
+    perspective: 1400px;
+    perspective-origin: 70% 40%;
+    pointer-events: none;
+    opacity: 0.6;
+    /* fade the wall out at every edge, and fully under the nav bar */
+    -webkit-mask-image:
+        linear-gradient(to bottom, transparent 16%, #000 34%, #000 74%, transparent 92%),
+        radial-gradient(ellipse 70% 72% at 66% 50%, #000 34%, transparent 78%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+        linear-gradient(to bottom, transparent 16%, #000 34%, #000 74%, transparent 92%),
+        radial-gradient(ellipse 70% 72% at 66% 50%, #000 34%, transparent 78%);
+    mask-composite: intersect;
+}
+
+.stadium__plane {
+    display: grid;
+    gap: 22px;
+    transform: rotateX(30deg) rotateZ(-9deg) translateY(-4%);
+    transform-origin: 50% 40%;
+    will-change: transform;
+}
+
+.stadium__row {
+    display: flex;
+    gap: 22px;
+    width: max-content;
+    animation: stadium-run 70s linear infinite;
+}
+
+.stadium__row:nth-child(2) { animation-duration: 84s; animation-direction: reverse; margin-left: -140px; }
+.stadium__row:nth-child(3) { animation-duration: 64s; margin-left: -60px; }
+.stadium__row:nth-child(4) { animation-duration: 90s; animation-direction: reverse; margin-left: -200px; }
+
+.stadium__row img {
+    width: clamp(150px, 15vw, 230px);
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 16px;
+    background: var(--surface);
+    outline: 1px solid rgba(196, 167, 255, 0.10);
+    outline-offset: -1px;
+}
+
+.stadium.is-paused .stadium__row {
+    animation-play-state: paused;
+}
+
+@keyframes stadium-run {
+    to { transform: translateX(-50%); } /* rows are doubled by script, so -50% loops seamlessly */
+}
+
+/* the copy side stays calm: a scrim from the page colour */
+.hero__grid::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -40% 30% -40% -40vw;
+    background: linear-gradient(90deg, var(--bg) 48%, rgba(14, 10, 24, 0.8) 74%, rgba(14, 10, 24, 0));
+    pointer-events: none;
+}
+
+@media (max-width: 960px) {
+    .stadium {
+        inset: -4% -40% 30% -40%;
+        opacity: 0.4;
+        -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 85%);
+        mask-image: linear-gradient(to bottom, #000 30%, transparent 85%);
+    }
+
+    .stadium__row:nth-child(4) {
+        display: none;
+    }
+
+    .stadium__row img {
+        width: 120px;
+        border-radius: 12px;
+    }
+
+    .hero__grid::before {
+        inset: 30% -20vw -10% -20vw;
+        background: linear-gradient(to bottom, rgba(14, 10, 24, 0), var(--bg) 40%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stadium__row {
+        animation: none;
+    }
+
+    .stadium__plane {
+        transform: rotateX(30deg) rotateZ(-9deg) translateY(-4%) !important;
+    }
+}
+
+/* ============ Viewer morph (View Transitions) ============ */
+::view-transition-group(lb-morph) {
+    animation-duration: 460ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+::view-transition-old(lb-morph),
+::view-transition-new(lb-morph) {
+    height: 100%;
+    object-fit: contain;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 260ms;
+}
+
+.lightbox.is-morphing,
+.lightbox.is-morphing .lightbox__img {
+    transition: none !important;
+}
+
+/* touch: no false hovers */
+@media (hover: none) {
+    .card:hover,
+    .tile:hover,
+    .contact-card:hover {
+        transform: none;
+    }
+}
+
+/* phones: keep the four portrait chips from colliding */
+@media (max-width: 960px) {
+    .hero__chip--c {
+        top: auto;
+        bottom: 14%;
+        right: -12px;
     }
 }

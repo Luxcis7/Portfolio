@@ -39,7 +39,7 @@ if (tiles.length) {
     box.innerHTML = `
         <button class="lightbox__btn lightbox__close" aria-label="Close"><i class="bi bi-x-lg"></i></button>
         <button class="lightbox__btn lightbox__prev" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
-        <img class="lightbox__img" alt="">
+        <img class="lightbox__img" alt="" hidden>
         <div class="lightbox__set" hidden></div>
         <div class="lightbox__caption"></div>
         <button class="lightbox__btn lightbox__next" aria-label="Next"><i class="bi bi-chevron-right"></i></button>`;
@@ -71,7 +71,7 @@ if (tiles.length) {
             img.removeAttribute('src');
         } else {
             const source = tile.querySelector('img');
-            img.src = source.src;
+            img.src = source.dataset.full || source.src; // grid shows a thumbnail; the viewer shows the full image
             img.alt = source.alt;
             img.hidden = false;
             set.hidden = true;
@@ -80,17 +80,75 @@ if (tiles.length) {
         caption.innerHTML = `${label}<small>${current + 1} / ${tiles.length}</small>`;
     }
 
-    function open(index) {
-        lastFocus = document.activeElement;
+    // The picture you click grows into the viewer (and shrinks back on close) where View Transitions exist
+    const canMorph = 'startViewTransition' in document &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tileImg = i => (tiles[i].dataset.set ? null : tiles[i].querySelector('img'));
+    const onScreen = el => {
+        const r = el.getBoundingClientRect();
+        return r.bottom > 0 && r.top < window.innerHeight;
+    };
+
+    function morph(from, to, update) {
+        box.classList.add('is-morphing');
+        if (from) from.style.viewTransitionName = 'lb-morph';
+        let started = false;
+        const vt = document.startViewTransition(async () => {
+            started = true;
+            if (from) from.style.viewTransitionName = '';
+            await update();
+            if (to) to.style.viewTransitionName = 'lb-morph';
+        });
+        // a skipped transition rejects these; that's expected, not an error
+        vt.ready.catch(() => {});
+        vt.updateCallbackDone.catch(() => {});
+        // safety net: if the page can't paint a frame (background tab, busy device), open instantly instead
+        setTimeout(() => {
+            if (started) return;
+            vt.skipTransition();
+            if (from) from.style.viewTransitionName = '';
+            if (!started) { started = true; update(); }
+            box.classList.remove('is-morphing');
+        }, 250);
+        vt.finished.catch(() => {}).finally(() => {
+            if (to) to.style.viewTransitionName = '';
+            box.classList.remove('is-morphing');
+        });
+    }
+
+    function openNow(index) {
         show(index);
         box.classList.add('is-open');
         document.body.classList.add('no-scroll');
+    }
+
+    function open(index) {
+        lastFocus = document.activeElement;
+        const from = tileImg(index);
+        if (canMorph && from) {
+            morph(from, img, async () => {
+                openNow(index);
+                // wait briefly for the full image so the morph lands on it, but never freeze the page for long
+                await Promise.race([img.decode().catch(() => {}), new Promise(r => setTimeout(r, 350))]);
+            });
+        } else {
+            openNow(index);
+        }
         box.querySelector('.lightbox__close').focus();
     }
 
-    function close() {
+    function closeNow() {
         box.classList.remove('is-open');
         document.body.classList.remove('no-scroll');
+    }
+
+    function close() {
+        const to = tileImg(current);
+        if (canMorph && to && !img.hidden && onScreen(to)) {
+            morph(img, to, closeNow);
+        } else {
+            closeNow();
+        }
         lastFocus?.focus();
     }
 
@@ -161,4 +219,37 @@ if (ytFrames.length > 1) {
             if (frame.contentWindow !== e.source) send(frame, { event: 'command', func: 'pauseVideo', args: [] });
         });
     });
+}
+
+// Stadium wall: the hero's reel of jerseys
+const stadium = document.querySelector('[data-stadium]');
+
+if (stadium) {
+    const plane = stadium.querySelector('[data-stadium-plane]');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // double every row so translateX(-50%) loops without a seam
+    stadium.querySelectorAll('.stadium__row').forEach(row => {
+        [...row.children].forEach(img => row.appendChild(img.cloneNode()));
+    });
+
+    // only run while the hero is on screen
+    new IntersectionObserver(([entry]) => {
+        stadium.classList.toggle('is-paused', !entry.isIntersecting);
+    }).observe(stadium);
+
+    // parallax: the wall tips back and lifts as the hero scrolls away
+    if (!reduce) {
+        let ticking = false;
+        const tilt = () => {
+            ticking = false;
+            const p = Math.min(Math.max(window.scrollY / window.innerHeight, 0), 1);
+            plane.style.transform =
+                `rotateX(${(30 + p * 14).toFixed(2)}deg) rotateZ(-9deg) translateY(${(-4 - p * 14).toFixed(2)}%) scale(${(1 + p * 0.06).toFixed(3)})`;
+        };
+        window.addEventListener('scroll', () => {
+            if (!ticking) { ticking = true; requestAnimationFrame(tilt); }
+        }, { passive: true });
+        tilt();
+    }
 }
