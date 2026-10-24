@@ -475,3 +475,92 @@ if (document.documentElement.scrollHeight > window.innerHeight * 4) {
         document.querySelector('.nav__brand')?.focus({ preventScroll: true });
     });
 }
+
+// Order form: email it, or copy it and open Messenger (no server needed)
+const orderForm = document.querySelector('[data-order-form]');
+
+if (orderForm) {
+    const f = orderForm.elements;
+    const error = orderForm.querySelector('.order__error');
+    const note = orderForm.querySelector('.order__note');
+    const DRAFT = 'bossgraphix-order-draft';
+
+    // keep a half-typed order through reloads (this browser only)
+    try {
+        const saved = JSON.parse(localStorage.getItem(DRAFT) || '{}');
+        Object.entries(saved).forEach(([k, v]) => { if (f[k]) f[k].value = v; });
+    } catch {}
+    orderForm.addEventListener('input', () => {
+        try {
+            const data = Object.fromEntries([...new FormData(orderForm)]);
+            localStorage.setItem(DRAFT, JSON.stringify(data));
+        } catch {}
+    });
+
+    const summary = () => {
+        const d = f.date.value ? new Date(f.date.value + 'T00:00').toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+        return [
+            'Hi Boss Graphix! I\'d like to order:',
+            '',
+            `What: ${f.kind.value}`,
+            f.qty.value ? `How many: ${f.qty.value} pcs` : null,
+            d ? `Needed by: ${d}` : null,
+            f.team.value.trim() ? `For: ${f.team.value.trim()}` : null,
+            f.details.value.trim() ? `Details: ${f.details.value.trim()}` : null,
+            '',
+            `— ${f.name.value.trim()}`,
+        ].filter(line => line !== null).join('\n');
+    };
+
+    const check = () => {
+        const missing = [];
+        if (!f.name.value.trim()) missing.push(['name', 'your name']);
+        if (!f.kind.value) missing.push(['kind', 'what you need']);
+        orderForm.querySelectorAll('[aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
+        if (!missing.length) { error.hidden = true; return true; }
+        missing.forEach(([name]) => f[name].setAttribute('aria-invalid', 'true'));
+        error.textContent = `Please add ${missing.map(m => m[1]).join(' and ')} so I know how to help.`;
+        error.hidden = false;
+        f[missing[0][0]].focus();
+        return false;
+    };
+
+    const done = msg => {
+        note.textContent = msg;
+        try { localStorage.removeItem(DRAFT); } catch {}
+    };
+
+    orderForm.addEventListener('submit', e => {
+        e.preventDefault();
+        if (!check()) return;
+        const subject = `Order: ${f.kind.value}${f.team.value.trim() ? ' for ' + f.team.value.trim() : ''}`;
+        location.href = `mailto:luxcisity@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary())}`;
+        done('Your email app should open with the order filled in.');
+    });
+
+    orderForm.querySelector('[data-send="messenger"]').addEventListener('click', async () => {
+        if (!check()) return;
+        let copied = false;
+        try { await navigator.clipboard.writeText(summary()); copied = true; } catch {}
+        window.open('https://m.me/bossgraphixx', '_blank', 'noopener');
+        done(copied
+            ? 'Order copied — paste it into the Messenger chat that just opened.'
+            : 'Messenger is opening — copy your details from the form into the chat.');
+    });
+}
+
+// "New" badges: designs from the last 45 days; they expire on their own
+{
+    const DAY = 864e5;
+    const now = Date.now();
+    document.querySelectorAll('.tile[data-date]').forEach(tile => {
+        const made = Date.parse(tile.dataset.date + 'T00:00:00');
+        if (Number.isNaN(made) || now - made > 45 * DAY || made > now + DAY) return;
+        const badge = document.createElement('span');
+        badge.className = 'tile__new';
+        badge.textContent = 'New';
+        tile.append(badge);
+        const cap = tile.querySelector('figcaption');
+        if (cap) cap.insertAdjacentHTML('afterbegin', '<span class="sr-only">New: </span>');
+    });
+}

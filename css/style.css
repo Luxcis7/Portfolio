@@ -1892,3 +1892,136 @@ main:focus {
         background: var(--violet-600);
     }
 }
+
+/* ============ Order form ============ */
+.order {
+    margin-top: 40px;
+    padding: clamp(24px, 4vw, 44px);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, rgba(124, 58, 237, 0.16), rgba(14, 10, 24, 0) 60%), var(--surface);
+    border: 1px solid var(--border-strong);
+}
+
+.order__intro h3 {
+    font-size: clamp(24px, 3vw, 32px);
+}
+
+.order__intro p {
+    margin-top: 8px;
+    color: var(--text-muted);
+    max-width: 60ch;
+}
+
+.order__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 20px;
+    margin-top: 28px;
+}
+
+.order__field {
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.order__field em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--text-faint);
+}
+
+.order__field--wide {
+    grid-column: 1 / -1;
+}
+
+.order input,
+.order select,
+.order textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    font: 400 16px/1.4 var(--font-body);
+    color-scheme: dark;
+    transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.order textarea {
+    resize: vertical;
+}
+
+.order input:focus,
+.order select:focus,
+.order textarea:focus {
+    outline: none;
+    border-color: var(--purple-400);
+    background: var(--bg-soft);
+}
+
+.order [aria-invalid="true"] {
+    border-color: #f87171;
+}
+
+.order__error {
+    margin-top: 16px;
+    color: #fca5a5;
+    font-weight: 500;
+}
+
+.order__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 14px;
+    margin-top: 24px;
+}
+
+.order__note {
+    flex-basis: 100%;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.order__note:empty {
+    display: none;
+}
+
+@media (max-width: 860px) {
+    .order__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .order__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .order__actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============ "New" badge on recent designs ============ */
+.tile__new {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--gradient);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 6px 18px -6px rgba(168, 85, 247, 0.9);
+    pointer-events: none;
+}
