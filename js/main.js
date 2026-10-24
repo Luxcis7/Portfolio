@@ -62,7 +62,7 @@ if (tiles.length) {
             set.style.setProperty('--n', sources.length);
             set.replaceChildren(...sources.map(s => {
                 const el = document.createElement('img');
-                el.src = s.src;
+                el.src = s.dataset.full || s.src; // full posters in the viewer
                 el.alt = s.alt;
                 return el;
             }));
@@ -182,44 +182,95 @@ if (tiles.length) {
 const revealEls = document.querySelectorAll('.reveal');
 
 if ('IntersectionObserver' in window) {
+    const show = el => el.classList.add('is-visible');
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
+            // reveal on the first pixel in view, and anything already scrolled past (a jump to #contact skips sections)
+            if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
+                show(entry.target);
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.12 });
+    }, { threshold: 0, rootMargin: '0px 0px -6% 0px' });
 
     revealEls.forEach(el => observer.observe(el));
 } else {
     revealEls.forEach(el => el.classList.add('is-visible'));
 }
 
-// Only one YouTube embed plays at a time: pause the others when one starts
-const ytFrames = document.querySelectorAll('iframe[src*="youtube"]');
-if (ytFrames.length > 1) {
-    const send = (frame, msg) => frame.contentWindow && frame.contentWindow.postMessage(JSON.stringify(msg), '*');
+// YouTube: light previews, real player on tap, and only one video playing at a time
+const ytId = frame => (frame.src.match(/\/embed\/([A-Za-z0-9_-]{11})(?:[?&#]|$)/) || [])[1];
 
-    ytFrames.forEach((frame, i) => {
-        frame.addEventListener('load', () => {
-            send(frame, { event: 'listening', id: i, channel: 'widget' });
-            send(frame, { event: 'command', func: 'addEventListener', args: ['onStateChange'] });
-        });
-    });
+// placeholder IDs (e.g. SHORT_ID_2) would show YouTube's error box: hide those cards until a real ID is pasted in
+document.querySelectorAll('.video-card').forEach(card => {
+    const frame = card.querySelector('iframe');
+    if (frame && !ytId(frame)) card.hidden = true;
+});
 
-    window.addEventListener('message', e => {
-        if (!/youtube(-nocookie)?\.com$/.test(new URL(e.origin).hostname)) return;
-        let data;
-        try { data = JSON.parse(e.data); } catch { return; }
-        const playing = (data.event === 'onStateChange' && data.info === 1) ||
-            (data.event === 'infoDelivery' && data.info && data.info.playerState === 1);
-        if (!playing) return;
-        ytFrames.forEach(frame => {
-            if (frame.contentWindow !== e.source) send(frame, { event: 'command', func: 'pauseVideo', args: [] });
-        });
+const players = [];
+const send = (frame, msg) => frame.contentWindow && frame.contentWindow.postMessage(JSON.stringify(msg), '*');
+const listen = frame => {
+    players.push(frame);
+    frame.addEventListener('load', () => {
+        send(frame, { event: 'listening', id: players.length, channel: 'widget' });
+        send(frame, { event: 'command', func: 'addEventListener', args: ['onStateChange'] });
     });
-}
+};
+
+window.addEventListener('message', e => {
+    let host;
+    try { host = new URL(e.origin).hostname; } catch { return; }
+    if (!/youtube(-nocookie)?\.com$/.test(host)) return;
+    let data;
+    try { data = JSON.parse(e.data); } catch { return; }
+    const playing = (data.event === 'onStateChange' && data.info === 1) ||
+        (data.event === 'infoDelivery' && data.info && data.info.playerState === 1);
+    if (!playing) return;
+    players.forEach(frame => {
+        if (frame.contentWindow !== e.source) send(frame, { event: 'command', func: 'pauseVideo', args: [] });
+    });
+});
+
+document.querySelectorAll('.video > iframe').forEach(frame => {
+    const id = ytId(frame);
+    if (!id) return;
+    const play = document.createElement('button');
+    play.type = 'button';
+    play.className = 'video__play';
+    play.setAttribute('aria-label', `Play video: ${frame.title || 'YouTube video'}`);
+    const thumb = Object.assign(document.createElement('img'), {
+        src: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, alt: '', loading: 'lazy', decoding: 'async',
+    });
+    const icon = document.createElement('span');
+    icon.className = 'video__icon';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg>';
+    play.append(thumb, icon);
+    play.addEventListener('click', () => {
+        const url = new URL(frame.src);
+        url.searchParams.set('autoplay', '1');
+        url.searchParams.set('enablejsapi', '1');
+        frame.removeAttribute('loading');
+        frame.src = url.toString();
+        play.replaceWith(frame);
+        listen(frame);
+        frame.focus();
+    });
+    frame.replaceWith(play);
+});
+
+// headings say how many designs each group holds; recount so they never drift as work is added
+document.querySelectorAll('.group').forEach(group => {
+    const label = group.querySelector('.group__head span');
+    if (!label) return;
+    const cards = [...group.querySelectorAll('.video-card')].filter(c => !c.hidden);
+    const tiles = [...group.querySelectorAll('.tile')];
+    const sets = tiles.filter(t => t.dataset.set);
+    if (cards.length) label.textContent = `${cards.length} video${cards.length === 1 ? '' : 's'}`;
+    else if (tiles.length && sets.length === tiles.length) {
+        const posters = sets.reduce((n, t) => n + t.querySelectorAll('img').length, 0);
+        label.textContent = `${sets.length} sets · ${posters} posters`;
+    } else if (tiles.length) label.textContent = `${tiles.length} design${tiles.length === 1 ? '' : 's'}`;
+});
 
 // Stadium wall: the hero's reel of jerseys
 const stadium = document.querySelector('[data-stadium]');

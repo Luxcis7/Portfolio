@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400;500;600&display=swap');
 
 /* ============ Tokens ============ */
 :root {
@@ -27,7 +27,7 @@
     --shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
     --glow: 0 0 0 1px rgba(168, 85, 247, 0.35), 0 20px 60px -15px rgba(168, 85, 247, 0.45);
 
-    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-display: 'Archivo', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
 
     --container: 1200px;
@@ -65,6 +65,7 @@ body.no-scroll {
 
 img {
     max-width: 100%;
+    height: auto; /* width/height attributes reserve the space; never pin the pixel height */
     display: block;
 }
 
@@ -75,6 +76,7 @@ a {
 
 h1, h2, h3, h4 {
     font-family: var(--font-display);
+    font-stretch: 104%;
     line-height: 1.1;
     margin: 0;
     letter-spacing: -0.02em;
@@ -1568,4 +1570,105 @@ p {
         bottom: 14%;
         right: -12px;
     }
+}
+
+/* ============ YouTube previews: thumbnail first, player on tap ============ */
+.video__play {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.video__play img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1), opacity 200ms ease;
+}
+
+.video__icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin: -36px 0 0 -36px;
+    padding-left: 4px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    box-shadow: 0 12px 32px -10px rgba(168, 85, 247, 0.8);
+    transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.video__play:active .video__icon {
+    transform: scale(0.94);
+}
+
+.video__play:focus-visible {
+    outline: 3px solid var(--purple-400);
+    outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .video__play:hover img {
+        transform: scale(1.03);
+        opacity: 0.88;
+    }
+
+    .video__play:hover .video__icon {
+        transform: scale(1.08);
+    }
+}
+
+
+/* Archivo: wide display cut for headings and figures */
+.hero h1 {
+    font-weight: 800;
+    font-stretch: 108%;
+    font-size: clamp(38px, 5vw, 72px);
+    letter-spacing: -0.015em;
+}
+
+/* a surname is one word: never split "Con-ui" at its hyphen */
+.hero h1 .gradient-text {
+    white-space: nowrap;
+}
+
+.hero__stats strong {
+    font-stretch: 125%;
+    font-weight: 800;
+}
+
+.nav__brand,
+.btn {
+    font-stretch: 100%;
+}
+
+/* headings break into even lines, never a lone last word */
+h1, h2, h3 {
+    text-wrap: balance;
+}
+
+/* the About heading lives in a half-width column: size it to the column */
+.about__text h2 {
+    font-size: clamp(30px, 3.2vw, 44px);
+}
+
+/* the name reads "Francis Bernard / Con-ui": let it wrap naturally, not balanced */
+.hero h1 {
+    text-wrap: wrap;
+}
+
+/* shorts sit centred whatever their count (placeholders are hidden) */
+.shorts {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 260px));
+    justify-content: center;
 }
