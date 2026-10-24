@@ -27,49 +27,34 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ProfessionalService",
-      "name": "Boss Graphix",
-      "description": "Jersey, pubmat, logo and lanyard design for teams, schools and organizations across Agusan del Norte.",
+      "@type": "Person",
+      "name": "Francis Bernard Con-ui",
+      "jobTitle": "Graphic Designer",
       "url": "https://luxcis7.github.io/Portfolio/",
-      "image": "https://luxcis7.github.io/Portfolio/images/share-preview.jpg",
-      "logo": "https://luxcis7.github.io/Portfolio/images/boss-graphix-logo.webp",
-      "telephone": "+63 906 093 6893",
-      "email": "luxcisity@gmail.com",
+      "image": "https://luxcis7.github.io/Portfolio/images/thumbs/gwapo.jpg",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Poblacion",
         "addressLocality": "Carmen",
         "addressRegion": "Agusan del Norte",
-        "postalCode": "8603",
         "addressCountry": "PH"
       },
-      "areaServed": {
-        "@type": "AdministrativeArea",
-        "name": "Agusan del Norte"
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Boss Graphix",
+        "url": "https://luxcis7.github.io/BossGraphix/"
       },
-      "founder": {
-        "@type": "Person",
-        "name": "Francis Bernard Con-ui",
-        "jobTitle": "Graphic Designer"
-      },
-      "sameAs": [
-        "https://www.facebook.com/bossgraphixx",
-        "https://www.youtube.com/channel/UCdnu2-Lo7BEwewkLYeN1y0g"
-      ],
       "knowsAbout": [
         "Jersey design",
-        "Sublimation jersey design",
         "Pubmat design",
         "Logo design",
         "Lanyard design",
         "Video editing"
       ],
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 8.990059,
-        "longitude": 125.293911
-      },
-      "hasMap": "https://maps.app.goo.gl/ZjweWsMX9BxM4H9dA"
+      "sameAs": [
+        "https://www.facebook.com/bossgraphixx",
+        "https://www.youtube.com/channel/UCdnu2-Lo7BEwewkLYeN1y0g",
+        "https://luxcis7.github.io/BossGraphix/"
+      ]
     }
     </script>
 </head>
@@ -88,6 +73,7 @@
                 <li><a href="#services">Projects</a></li>
                 <li><a href="#videos">Videos</a></li>
                 <li><a href="#updates">Updates</a></li>
+                <li><a href="https://luxcis7.github.io/BossGraphix/" target="_blank" rel="noopener">Shop</a></li>
                 <li><a class="nav__cta" href="#contact">Contact</a></li>
             </ul>
         </div>
@@ -329,70 +315,14 @@
                     </a>
                 </div>
 
-                <div class="visit reveal">
-                    <div class="visit__map">
-                        <iframe title="Map showing the Boss Graphix shop in Poblacion, Carmen, Agusan del Norte"
-                            src="https://maps.google.com/maps?q=8.990059,125.293911&amp;z=17&amp;output=embed"
-                            loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
-                    </div>
-                    <div class="visit__info">
-                        <h3>Visit the shop</h3>
-                        <p class="visit__address">Poblacion, Carmen, 8603<br>Agusan del Norte, Philippines</p>
-                        <p class="visit__note">Drop by to talk through your design, check colours or pick up your order. Message ahead so I can make sure I'm in.</p>
-                        <div class="visit__actions">
-                            <a class="btn btn--primary" href="https://www.google.com/maps/dir/?api=1&amp;destination=8.990059,125.293911" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> Get directions</a>
-                            <a class="btn btn--ghost" href="https://maps.app.goo.gl/ZjweWsMX9BxM4H9dA" target="_blank" rel="noopener"><i class="bi bi-geo-alt"></i> Open in Google Maps</a>
-                        </div>
-                    </div>
-                </div>
-
-                <form class="order reveal" id="order" action="mailto:luxcisity@gmail.com?subject=Design%20order" method="post" enctype="text/plain" novalidate data-order-form>
-                    <div class="order__intro">
-                        <h3>Start an order</h3>
-                        <p>Tell me what you need. Send it by email, or open Messenger with your order copied, ready to paste.</p>
-                    </div>
-                    <div class="order__grid">
-                        <label class="order__field">
-                            <span>Your name</span>
-                            <input name="name" autocomplete="name" required>
-                        </label>
-                        <label class="order__field">
-                            <span>Team, school or organization</span>
-                            <input name="team" autocomplete="organization">
-                        </label>
-                        <label class="order__field">
-                            <span>What do you need?</span>
-                            <select name="kind" required>
-                                <option value="">Choose one</option>
-                                <option>Jersey set (top &amp; shorts)</option>
-                                <option>Jersey top / shirt</option>
-                                <option>Polo shirt</option>
-                                <option>Pubmat / poster</option>
-                                <option>Logo</option>
-                                <option>Lanyard</option>
-                                <option>Something else</option>
-                            </select>
-                        </label>
-                        <label class="order__field">
-                            <span>How many pieces? <em>(optional)</em></span>
-                            <input name="qty" type="number" min="1" inputmode="numeric" placeholder="e.g. 15">
-                        </label>
-                        <label class="order__field">
-                            <span>Needed by <em>(optional)</em></span>
-                            <input name="date" type="date">
-                        </label>
-                        <label class="order__field order__field--wide">
-                            <span>Details <em>(colours, names &amp; numbers, ideas)</em></span>
-                            <textarea name="details" rows="4"></textarea>
-                        </label>
-                    </div>
-                    <p class="order__error" role="alert" hidden></p>
-                    <div class="order__actions">
-                        <button class="btn btn--primary" type="submit" data-send="email"><i class="bi bi-envelope"></i> Send by email</button>
-                        <button class="btn btn--ghost" type="button" data-send="messenger"><i class="bi bi-messenger"></i> Copy &amp; open Messenger</button>
-                        <p class="order__note" aria-live="polite"></p>
-                    </div>
-                </form>
+                <a class="shop-cta reveal" href="https://luxcis7.github.io/BossGraphix/" target="_blank" rel="noopener">
+                    <span class="shop-cta__logo"><img src="images/boss-graphix-logo.webp" alt="" width="2000" height="1121"></span>
+                    <span class="shop-cta__text">
+                        <strong>Need jerseys made for your team?</strong>
+                        <span>Orders, quotes and the shop map are on the Boss Graphix site — my design shop in Poblacion, Carmen.</span>
+                    </span>
+                    <span class="btn btn--primary shop-cta__btn">Visit Boss Graphix <i class="bi bi-arrow-up-right"></i></span>
+                </a>
             </div>
         </section>
     </main>
