@@ -2025,3 +2025,78 @@ main:focus {
     box-shadow: 0 6px 18px -6px rgba(168, 85, 247, 0.9);
     pointer-events: none;
 }
+
+/* ============ Visit the shop (map) ============ */
+.visit {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0;
+    margin-top: 40px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+}
+
+.visit__map {
+    position: relative;
+    min-height: 340px;
+    background: var(--surface-2);
+}
+
+.visit__map iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.visit__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(24px, 4vw, 44px);
+    background: linear-gradient(160deg, rgba(124, 58, 237, 0.18), rgba(14, 10, 24, 0) 70%), var(--surface);
+}
+
+.visit__info h3 {
+    font-size: clamp(24px, 3vw, 32px);
+}
+
+.visit__address {
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.visit__note {
+    margin-top: 12px;
+    color: var(--text-muted);
+}
+
+.visit__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+@media (max-width: 860px) {
+    .visit {
+        grid-template-columns: 1fr;
+    }
+
+    .visit__map {
+        min-height: 0;
+        aspect-ratio: 4 / 3;
+    }
+}
+
+@media (max-width: 520px) {
+    .visit__actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
