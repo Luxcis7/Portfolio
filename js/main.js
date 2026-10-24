@@ -77,7 +77,13 @@ if (tiles.length) {
             set.hidden = true;
             set.replaceChildren();
         }
-        caption.innerHTML = `${label}<small>${current + 1} / ${tiles.length}</small>`;
+        const visible = tiles.filter(isShown);
+        caption.innerHTML = '';
+        caption.append(label);
+        const count = document.createElement('small');
+        count.textContent = `${visible.indexOf(tile) + 1} / ${visible.length}`;
+        caption.append(count);
+        preload(current);
     }
 
     // The picture you click grows into the viewer (and shrinks back on close) where View Transitions exist
@@ -152,6 +158,54 @@ if (tiles.length) {
         lastFocus?.focus();
     }
 
+    // tiles hidden by the gallery search are skipped
+    function isShown(tile) {
+        return !tile.hidden && !tile.closest('[hidden]');
+    }
+
+    function step(dir) {
+        let i = current;
+        for (let k = 0; k < tiles.length; k++) {
+            i = (i + dir + tiles.length) % tiles.length;
+            if (isShown(tiles[i])) break;
+        }
+        show(i);
+    }
+
+    // warm the neighbours' full images so the arrows feel instant
+    function preload(i) {
+        [1, -1].forEach(d => {
+            const t = tiles[(i + d + tiles.length) % tiles.length];
+            const pic = t && !t.dataset.set && t.querySelector('img');
+            if (pic && pic.dataset.full) new Image().src = pic.dataset.full;
+        });
+    }
+
+    // phones: swipe left/right to browse, swipe down to close
+    let touch = null;
+    box.addEventListener('pointerdown', e => {
+        if (e.pointerType === 'mouse' || e.target.closest('button')) return;
+        touch = { x: e.clientX, y: e.clientY, t: performance.now() };
+    });
+    box.addEventListener('pointerup', e => {
+        if (!touch) return;
+        const dx = e.clientX - touch.x, dy = e.clientY - touch.y;
+        const fast = Math.max(Math.abs(dx), Math.abs(dy)) / (performance.now() - touch.t) > 0.5;
+        touch = null;
+        if (Math.abs(dx) > Math.abs(dy) && (Math.abs(dx) > 50 || fast)) step(dx < 0 ? 1 : -1);
+        else if (dy > 80 || (dy > 30 && fast)) close();
+    });
+    box.addEventListener('pointercancel', () => { touch = null; });
+
+    // keyboard: Tab cycles inside the open viewer
+    box.addEventListener('keydown', e => {
+        if (e.key !== 'Tab') return;
+        const stops = [...box.querySelectorAll('button')];
+        const i = stops.indexOf(document.activeElement);
+        e.preventDefault();
+        stops[(i + (e.shiftKey ? -1 : 1) + stops.length) % stops.length].focus();
+    });
+
     tiles.forEach((tile, i) => {
         tile.tabIndex = 0;
         tile.addEventListener('click', () => open(i));
@@ -164,8 +218,8 @@ if (tiles.length) {
     });
 
     box.querySelector('.lightbox__close').addEventListener('click', close);
-    box.querySelector('.lightbox__prev').addEventListener('click', () => show(current - 1));
-    box.querySelector('.lightbox__next').addEventListener('click', () => show(current + 1));
+    box.querySelector('.lightbox__prev').addEventListener('click', () => step(-1));
+    box.querySelector('.lightbox__next').addEventListener('click', () => step(1));
     box.addEventListener('click', e => {
         if (e.target === box) close();
     });
@@ -173,8 +227,8 @@ if (tiles.length) {
     document.addEventListener('keydown', e => {
         if (!box.classList.contains('is-open')) return;
         if (e.key === 'Escape') close();
-        if (e.key === 'ArrowLeft') show(current - 1);
-        if (e.key === 'ArrowRight') show(current + 1);
+        if (e.key === 'ArrowLeft') step(-1);
+        if (e.key === 'ArrowRight') step(1);
     });
 }
 
@@ -303,4 +357,121 @@ if (stadium) {
         }, { passive: true });
         tilt();
     }
+}
+
+// Gallery finder: search and jump links for the big galleries (jerseys, pubmats)
+const groups = [...document.querySelectorAll('main .group')];
+const allTiles = groups.flatMap(g => [...g.querySelectorAll('.tile')]);
+
+if (groups.length > 1 && allTiles.length >= 24) {
+    const norm = t => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9ñ ]+/g, ' ');
+    const slug = t => norm(t).trim().replace(/\s+/g, '-');
+    const index = allTiles.map(tile => ({
+        tile,
+        text: norm([tile.querySelector('figcaption')?.textContent, ...[...tile.querySelectorAll('img')].map(i => i.alt)].join(' ')),
+    }));
+
+    const finder = document.createElement('div');
+    finder.className = 'finder';
+    finder.innerHTML = `
+        <div class="container finder__inner">
+            <label class="finder__search">
+                <span class="sr-only">Search designs</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="search" placeholder="Search ${allTiles.length} designs" aria-describedby="finder-hint" autocomplete="off" enterkeyhint="search" spellcheck="false">
+            </label>
+            <span id="finder-hint" class="sr-only">Type a team, school or event name</span>
+            <nav class="finder__jump" aria-label="Jump to"></nav>
+            <p class="finder__status" aria-live="polite"></p>
+        </div>`;
+    const input = finder.querySelector('input');
+    const jump = finder.querySelector('.finder__jump');
+    const status = finder.querySelector('.finder__status');
+
+    groups.forEach(g => {
+        const name = g.querySelector('h2')?.textContent.trim();
+        if (!name) return;
+        g.id = g.id || `g-${slug(name)}`;
+        const a = document.createElement('a');
+        a.href = `#${g.id}`;
+        a.textContent = name;
+        jump.append(a);
+    });
+
+    const empty = document.createElement('div');
+    empty.className = 'finder__empty';
+    empty.hidden = true;
+    empty.innerHTML = '<p>No designs match <strong></strong>.</p><button type="button" class="btn btn--ghost">Show all designs</button>';
+    empty.querySelector('button').addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+
+    const host = groups[0].parentElement;
+    host.parentElement.insertBefore(finder, host);
+    host.append(empty);
+
+    function apply() {
+        const words = norm(input.value).split(/\s+/).filter(Boolean);
+        let shown = 0;
+        index.forEach(({ tile, text }) => {
+            const match = words.every(w => text.includes(w));
+            tile.hidden = !match;
+            if (match) shown++;
+        });
+        groups.forEach(g => {
+            const tiles = [...g.querySelectorAll('.tile')];
+            const n = tiles.filter(t => !t.hidden).length;
+            g.hidden = n === 0;
+            const label = g.querySelector('.group__head span');
+            if (label && words.length) label.textContent = `${n} of ${tiles.length}`;
+            const link = jump.querySelector(`a[href="#${g.id}"]`);
+            if (link) link.hidden = n === 0;
+        });
+        if (!words.length) groups.forEach(g => {
+            // restore the full counts the page started with
+            const label = g.querySelector('.group__head span');
+            if (label && label.dataset.full) label.textContent = label.dataset.full;
+        });
+        status.textContent = words.length ? `${shown} of ${allTiles.length} designs` : '';
+        empty.hidden = shown > 0;
+        empty.querySelector('strong').textContent = `“${input.value.trim()}”`;
+        const url = new URL(location.href);
+        if (words.length) url.searchParams.set('q', input.value.trim()); else url.searchParams.delete('q');
+        history.replaceState(null, '', url);
+    }
+
+    groups.forEach(g => {
+        const label = g.querySelector('.group__head span');
+        if (label) label.dataset.full = label.textContent;
+    });
+
+    let timer;
+    input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(apply, 120); });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && input.value) { input.value = ''; apply(); }
+    });
+
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) { input.value = q; apply(); }
+}
+
+// Back to top: appears once a long page has been scrolled a couple of screens
+if (document.documentElement.scrollHeight > window.innerHeight * 4) {
+    const top = document.createElement('button');
+    top.type = 'button';
+    top.className = 'to-top';
+    top.setAttribute('aria-label', 'Back to top');
+    top.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    document.body.append(top);
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            top.classList.toggle('is-shown', window.scrollY > window.innerHeight * 2);
+            ticking = false;
+        });
+    }, { passive: true });
+    top.addEventListener('click', () => {
+        window.scrollTo({ top: 0 });
+        document.querySelector('.nav__brand')?.focus({ preventScroll: true });
+    });
 }
