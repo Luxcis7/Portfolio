@@ -51,7 +51,51 @@ if (tiles.length) {
     let current = 0;
     let lastFocus = null;
 
+    // Copy link: points at this exact design, e.g. jersey-design.html?design=Jersey/new/2026/pasion-family
+    const designId = tile => {
+        const pic = tile.querySelector('img');
+        return (pic.dataset.full || pic.getAttribute('src')).replace(/^images\//, '').replace(/\.\w+$/, '');
+    };
+    const linkBtn = document.createElement('button');
+    linkBtn.type = 'button';
+    linkBtn.className = 'lightbox__link';
+    linkBtn.addEventListener('click', async () => {
+        const url = new URL(location.href);
+        url.hash = '';
+        url.searchParams.set('design', designId(tiles[current]));
+        let copied = false;
+        try { await navigator.clipboard.writeText(url.toString()); copied = true; } catch {}
+        linkBtn.innerHTML = copied ? '<i class="bi bi-check2"></i> Link copied' : '<i class="bi bi-x-lg"></i> Couldn\'t copy';
+    });
+
+    // Click or tap the picture to zoom in; move around to look closer
+    let zoomed = false;
+    let dragged = 0;
+    const setZoom = on => {
+        zoomed = on;
+        img.classList.toggle('is-zoomed', on);
+        box.classList.toggle('is-zoomed', on);
+    };
+    const panTo = e => {
+        const r = img.getBoundingClientRect();
+        const x = Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100));
+        const y = Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100));
+        img.style.transformOrigin = `${x}% ${y}%`;
+    };
+    img.addEventListener('pointerdown', () => { dragged = 0; });
+    img.addEventListener('pointermove', e => {
+        if (!zoomed) return;
+        dragged += Math.abs(e.movementX) + Math.abs(e.movementY);
+        panTo(e);
+    });
+    img.addEventListener('click', e => {
+        if (zoomed && e.pointerType !== 'mouse' && dragged > 12) return; // that was a drag around the picture
+        if (!zoomed) panTo(e);
+        setZoom(!zoomed);
+    });
+
     function show(index) {
+        setZoom(false);
         current = (index + tiles.length) % tiles.length;
         const tile = tiles[current];
         const label = tile.querySelector('figcaption')?.textContent ?? '';
@@ -83,6 +127,8 @@ if (tiles.length) {
         const count = document.createElement('small');
         count.textContent = `${visible.indexOf(tile) + 1} / ${visible.length}`;
         caption.append(count);
+        linkBtn.innerHTML = '<i class="bi bi-link-45deg"></i> Copy link';
+        caption.append(linkBtn);
         preload(current);
     }
 
@@ -146,9 +192,15 @@ if (tiles.length) {
     function closeNow() {
         box.classList.remove('is-open');
         document.body.classList.remove('no-scroll');
+        const url = new URL(location.href);
+        if (url.searchParams.has('design')) {
+            url.searchParams.delete('design');
+            history.replaceState(null, '', url);
+        }
     }
 
     function close() {
+        setZoom(false);
         const to = tileImg(current);
         if (canMorph && to && !img.hidden && onScreen(to)) {
             morph(img, to, closeNow);
@@ -184,7 +236,7 @@ if (tiles.length) {
     // phones: swipe left/right to browse, swipe down to close
     let touch = null;
     box.addEventListener('pointerdown', e => {
-        if (e.pointerType === 'mouse' || e.target.closest('button')) return;
+        if (e.pointerType === 'mouse' || zoomed || e.target.closest('button')) return;
         touch = { x: e.clientX, y: e.clientY, t: performance.now() };
     });
     box.addEventListener('pointerup', e => {
@@ -230,6 +282,16 @@ if (tiles.length) {
         if (e.key === 'ArrowLeft') step(-1);
         if (e.key === 'ArrowRight') step(1);
     });
+
+    // a shared link opens straight on that design
+    const wanted = new URLSearchParams(location.search).get('design');
+    const hit = wanted ? tiles.findIndex(t => designId(t) === wanted) : -1;
+    if (hit > -1) {
+        lastFocus = tiles[hit];
+        tiles[hit].scrollIntoView({ block: 'center' });
+        openNow(hit);
+        box.querySelector('.lightbox__close').focus();
+    }
 }
 
 // Fade sections in as they scroll into view
@@ -382,9 +444,11 @@ if (groups.length > 1 && allTiles.length >= 24) {
             </label>
             <span id="finder-hint" class="sr-only">Type a team, school or event name</span>
             <nav class="finder__jump" aria-label="Jump to"></nav>
+            <div class="finder__chips" role="group" aria-label="Quick filters"></div>
             <p class="finder__status" aria-live="polite"></p>
         </div>`;
     const input = finder.querySelector('input');
+    const chips = finder.querySelector('.finder__chips');
     const jump = finder.querySelector('.finder__jump');
     const status = finder.querySelector('.finder__status');
 
@@ -408,8 +472,32 @@ if (groups.length > 1 && allTiles.length >= 24) {
     host.parentElement.insertBefore(finder, host);
     host.append(empty);
 
+    // Quick filters: only the words that really turn up in this gallery
+    ['Basketball', 'Volleyball', 'Esports', 'Badminton', 'Polo', 'Family', 'Tournament', 'Tryouts', 'Dance', 'Poster Making', 'Promo'].forEach(word => {
+        if (index.filter(({ text }) => text.includes(norm(word))).length < 3) return;
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.textContent = word;
+        chip.setAttribute('aria-pressed', 'false');
+        chip.addEventListener('click', () => {
+            input.value = chip.getAttribute('aria-pressed') === 'true' ? '' : word;
+            apply();
+        });
+        chips.append(chip);
+    });
+    if (!chips.children.length) chips.remove();
+
+    // "/" jumps to the search box, like most sites with one
+    document.addEventListener('keydown', e => {
+        if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.target.closest?.('input, textarea, select') || document.body.classList.contains('no-scroll')) return;
+        e.preventDefault();
+        input.focus();
+    });
+
     function apply() {
         const words = norm(input.value).split(/\s+/).filter(Boolean);
+        [...chips.children].forEach(c => c.setAttribute('aria-pressed', norm(c.textContent) === norm(input.value).trim()));
         let shown = 0;
         index.forEach(({ tile, text }) => {
             const match = words.every(w => text.includes(w));
@@ -476,79 +564,6 @@ if (document.documentElement.scrollHeight > window.innerHeight * 4) {
     });
 }
 
-// Order form: email it, or copy it and open Messenger (no server needed)
-const orderForm = document.querySelector('[data-order-form]');
-
-if (orderForm) {
-    const f = orderForm.elements;
-    const error = orderForm.querySelector('.order__error');
-    const note = orderForm.querySelector('.order__note');
-    const DRAFT = 'bossgraphix-order-draft';
-
-    // keep a half-typed order through reloads (this browser only)
-    try {
-        const saved = JSON.parse(localStorage.getItem(DRAFT) || '{}');
-        Object.entries(saved).forEach(([k, v]) => { if (f[k]) f[k].value = v; });
-    } catch {}
-    orderForm.addEventListener('input', () => {
-        try {
-            const data = Object.fromEntries([...new FormData(orderForm)]);
-            localStorage.setItem(DRAFT, JSON.stringify(data));
-        } catch {}
-    });
-
-    const summary = () => {
-        const d = f.date.value ? new Date(f.date.value + 'T00:00').toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-        return [
-            'Hi Boss Graphix! I\'d like to order:',
-            '',
-            `What: ${f.kind.value}`,
-            f.qty.value ? `How many: ${f.qty.value} pcs` : null,
-            d ? `Needed by: ${d}` : null,
-            f.team.value.trim() ? `For: ${f.team.value.trim()}` : null,
-            f.details.value.trim() ? `Details: ${f.details.value.trim()}` : null,
-            '',
-            `— ${f.name.value.trim()}`,
-        ].filter(line => line !== null).join('\n');
-    };
-
-    const check = () => {
-        const missing = [];
-        if (!f.name.value.trim()) missing.push(['name', 'your name']);
-        if (!f.kind.value) missing.push(['kind', 'what you need']);
-        orderForm.querySelectorAll('[aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
-        if (!missing.length) { error.hidden = true; return true; }
-        missing.forEach(([name]) => f[name].setAttribute('aria-invalid', 'true'));
-        error.textContent = `Please add ${missing.map(m => m[1]).join(' and ')} so I know how to help.`;
-        error.hidden = false;
-        f[missing[0][0]].focus();
-        return false;
-    };
-
-    const done = msg => {
-        note.textContent = msg;
-        try { localStorage.removeItem(DRAFT); } catch {}
-    };
-
-    orderForm.addEventListener('submit', e => {
-        e.preventDefault();
-        if (!check()) return;
-        const subject = `Order: ${f.kind.value}${f.team.value.trim() ? ' for ' + f.team.value.trim() : ''}`;
-        location.href = `mailto:luxcisity@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary())}`;
-        done('Your email app should open with the order filled in.');
-    });
-
-    orderForm.querySelector('[data-send="messenger"]').addEventListener('click', async () => {
-        if (!check()) return;
-        let copied = false;
-        try { await navigator.clipboard.writeText(summary()); copied = true; } catch {}
-        window.open('https://m.me/bossgraphixx', '_blank', 'noopener');
-        done(copied
-            ? 'Order copied — paste it into the Messenger chat that just opened.'
-            : 'Messenger is opening — copy your details from the form into the chat.');
-    });
-}
-
 // "New" badges: designs from the last 45 days; they expire on their own
 {
     const DAY = 864e5;
@@ -564,3 +579,96 @@ if (orderForm) {
         if (cap) cap.insertAdjacentHTML('afterbegin', '<span class="sr-only">New: </span>');
     });
 }
+
+// Clients: a slow ticker of names (a plain wrapped list with reduced motion)
+const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clientList = document.querySelector('.clients__list');
+
+if (clientList && !calm) {
+    [...clientList.children].forEach(li => {
+        const copy = li.cloneNode(true);
+        copy.setAttribute('aria-hidden', 'true');
+        clientList.append(copy);
+    });
+    clientList.classList.add('is-ticker');
+    clientList.style.setProperty('--ticker-time', `${clientList.children.length * 2.6}s`);
+    const ticker = document.createElement('div');
+    ticker.className = 'ticker';
+    clientList.before(ticker);
+    ticker.append(clientList);
+}
+
+// Nav: highlight the section on screen
+const navLinks = [...document.querySelectorAll('.nav__links a[href^="#"]:not(.nav__cta)')];
+const spied = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+if (spied.length && 'IntersectionObserver' in window) {
+    const inView = new Set();
+    const spy = new IntersectionObserver(entries => {
+        entries.forEach(en => (en.isIntersecting ? inView.add(en.target) : inView.delete(en.target)));
+        const current = spied.find(sec => inView.has(sec));
+        navLinks.forEach(a => {
+            const on = Boolean(current) && a.getAttribute('href') === `#${current.id}`;
+            a.classList.toggle('is-active', on);
+            if (on) a.setAttribute('aria-current', 'true');
+            else a.removeAttribute('aria-current');
+        });
+    }, { rootMargin: '-45% 0px -50% 0px' }); // a thin band across the middle of the screen
+    spied.forEach(sec => spy.observe(sec));
+}
+
+// Hero numbers count up once on arrival
+if (!calm) {
+    document.querySelectorAll('.hero__stats strong').forEach(el => {
+        const m = el.textContent.match(/^(\d+)\+$/);
+        if (!m) return;
+        const end = Number(m[1]);
+        const start = performance.now();
+        const tick = now => {
+            const t = Math.min(1, (now - start) / 1400);
+            el.textContent = `${Math.round(end * (1 - Math.pow(1 - t, 4)))}+`;
+            if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    });
+}
+
+// Scroll progress: a thin line under the nav on long pages (CSS drives it where supported)
+if (CSS.supports('animation-timeline: scroll()') && document.documentElement.scrollHeight > window.innerHeight * 4) {
+    const bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    bar.setAttribute('aria-hidden', 'true');
+    document.body.append(bar);
+}
+
+// Tiles lean toward the pointer (mouse only)
+if (!calm && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let lit = null;
+    const rest = () => {
+        if (!lit) return;
+        lit.style.removeProperty('--lean-x');
+        lit.style.removeProperty('--lean-y');
+        lit = null;
+    };
+    document.addEventListener('pointermove', e => {
+        const tile = e.target.closest?.('.tile');
+        if (tile !== lit) rest();
+        if (!tile) return;
+        lit = tile;
+        const r = tile.getBoundingClientRect();
+        tile.style.setProperty('--lean-x', `${(0.5 - (e.clientY - r.top) / r.height) * 7}deg`);
+        tile.style.setProperty('--lean-y', `${((e.clientX - r.left) / r.width - 0.5) * 7}deg`);
+    }, { passive: true });
+}
+
+// Copy buttons (the email on the contact section)
+document.querySelectorAll('[data-copy]').forEach(btn => {
+    const label = btn.querySelector('span');
+    const idle = label.textContent;
+    btn.addEventListener('click', async () => {
+        let copied = false;
+        try { await navigator.clipboard.writeText(btn.dataset.copy); copied = true; } catch {}
+        label.textContent = copied ? 'Copied' : btn.dataset.copy;
+        setTimeout(() => { label.textContent = idle; }, 2200);
+    });
+});

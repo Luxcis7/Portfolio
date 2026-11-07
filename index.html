@@ -18,12 +18,15 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#0e0a18">
     <meta name="description" content="Portfolio of Francis Bernard Con-ui (Boss Graphix), a graphic designer making jerseys, pubmats, logos and lanyards.">
-    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="images/favicon-64.png" type="image/png" sizes="64x64">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Inter:wght@400;500;600&amp;display=swap">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261031b">
+    <noscript><style>.reveal { opacity: 1; transform: none; }</style></noscript>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -64,7 +67,7 @@
     <header class="nav">
         <div class="container nav__inner">
             <a class="nav__brand" href="index.html">
-                <img src="images/boss-graphix-logo.webp" alt="Boss Graphix">
+                <img src="images/boss-graphix-logo.webp" alt="Boss Graphix" width="2000" height="1121">
             </a>
             <button class="nav__toggle" aria-label="Open menu" aria-expanded="false"><i class="bi bi-list"></i></button>
             <ul class="nav__links">
@@ -103,7 +106,7 @@
                     </div>
                     <div class="hero__stats">
                         <div><strong>180+</strong><span>Jersey &amp; apparel designs</span></div>
-                        <div><strong>55+</strong><span>Pubmats &amp; frames</span></div>
+                        <div><strong>65+</strong><span>Pubmats &amp; frames</span></div>
                         <div><strong>10+</strong><span>Logos &amp; identities</span></div>
                     </div>
                 </div>
@@ -124,9 +127,9 @@
         <section id="about" class="section section--soft">
             <div class="container about__grid">
                 <div class="about__collage reveal">
-                    <img src="images/thumbs/ohyeah.jpg" alt="Design work sample" loading="lazy" width="600" height="900">
-                    <img src="images/eyhey.jpg" alt="Design work sample" loading="lazy" width="1800" height="1350">
-                    <img src="images/thumbs/vgd.jpg" alt="Design work sample" loading="lazy" width="900" height="506">
+                    <img src="images/thumbs/ohyeah.jpg" alt="Francis holding a trophy, medals and certificates at an Information Technology Society awards event" loading="lazy" width="600" height="900">
+                    <img src="images/thumbs/eyhey.jpg" alt="Congratulations graphic for Franz Con-ui, champion of a visual graphic design contest at Candelaria Institute" loading="lazy" width="900" height="675">
+                    <img src="images/thumbs/vgd.jpg" alt="Congratulations graphic for Francis Bernard Con-ui, 1st placer in poster making, next to the winning poster" loading="lazy" width="900" height="506">
                 </div>
                 <div class="about__text reveal">
                     <h2>Simple designs that <span class="gradient-text">look good</span> and say it clearly.</h2>
@@ -173,6 +176,11 @@
                 <div class="section-actions">
                     <a class="btn btn--ghost" href="jersey-design.html">See all jersey designs <i class="bi bi-arrow-right"></i></a>
                 </div>
+
+                <div class="clients reveal">
+                    <h3 class="clients__title">Designed for teams, schools and offices like</h3>
+                    <ul class="clients__list"><li>Holy Rosary Academy of Camiguin</li><li>FSUU College of Accountancy</li><li>OLCACI</li><li>CBIT</li><li>SJIT</li><li>SK Poblacion Carmen</li><li>District 5 Burgos</li><li>Timber City Academy</li><li>Liceo de Cagayan University</li><li>Medina Empire</li><li>JOKERZ Esports</li><li>PoGO BXU</li><li>Carmen National High School</li><li>Mistow Pharmacy</li></ul>
+                </div>
             </div>
         </section>
 
@@ -186,7 +194,7 @@
 
                 <div class="cards">
                     <article class="card reveal">
-                        <div class="card__media"><img src="images/Jersey/new/2026/holy-rosary-academy-fire-nation.jpg" alt="" loading="lazy" width="1400" height="1400"></div>
+                        <div class="card__media"><img src="images/thumbs/Jersey/new/2026/holy-rosary-academy-fire-nation.jpg" alt="" loading="lazy" width="480" height="480"></div>
                         <div class="card__body">
                             <span class="card__meta">180+ designs</span>
                             <h3>Jersey Design</h3>
@@ -198,7 +206,7 @@
                     <article class="card reveal">
                         <div class="card__media"><img src="images/thumbs/soc.jpg" alt="" loading="lazy" width="900" height="675"></div>
                         <div class="card__body">
-                            <span class="card__meta">55+ designs</span>
+                            <span class="card__meta">65+ designs</span>
                             <h3>Social Media Pubmats</h3>
                             <p>Bold, platform-ready posters for announcements, promotions, events and profile frames.</p>
                             <a class="card__link" href="pubmat.html">View gallery <i class="bi bi-arrow-right"></i></a>
@@ -216,7 +224,7 @@
                     </article>
 
                     <article class="card card--wide reveal">
-                        <div class="card__media"><img src="images/lanyard.jpg" alt="" loading="lazy" width="2048" height="1536"></div>
+                        <div class="card__media"><img src="images/thumbs/lanyard.jpg" alt="" loading="lazy" width="900" height="675"></div>
                         <div class="card__body">
                             <span class="card__meta">Print</span>
                             <h3>Lanyard Design</h3>
@@ -226,7 +234,7 @@
                     </article>
 
                     <article class="card card--wide reveal">
-                        <div class="card__media"><img src="images/burgir.jpg" alt="" loading="lazy" width="1152" height="2048"></div>
+                        <div class="card__media"><img src="images/thumbs/burgir.jpg" alt="" loading="lazy" width="360" height="640"></div>
                         <div class="card__body">
                             <span class="card__meta">UI / App</span>
                             <h3>Food App Layout</h3>
@@ -238,8 +246,40 @@
             </div>
         </section>
 
+        <!-- How I work -->
+        <section id="process" class="section">
+            <div class="container">
+                <div class="section-head section-head--center reveal">
+                    <h2>How a design comes together</h2>
+                    <p>From your first message to the final files.</p>
+                </div>
+                <ol class="steps">
+                    <li class="step reveal">
+                        <span class="step__icon"><i class="bi bi-chat-dots"></i></span>
+                        <h3>Send your idea</h3>
+                        <p>Your team or event name, colours, logo, and what the design is for.</p>
+                    </li>
+                    <li class="step reveal">
+                        <span class="step__icon"><i class="bi bi-vector-pen"></i></span>
+                        <h3>Get a first draft</h3>
+                        <p>A full mockup, so you see the idea before anything is final.</p>
+                    </li>
+                    <li class="step reveal">
+                        <span class="step__icon"><i class="bi bi-arrow-repeat"></i></span>
+                        <h3>Fine-tune it</h3>
+                        <p>We adjust colours, names and details until it's right.</p>
+                    </li>
+                    <li class="step reveal">
+                        <span class="step__icon"><i class="bi bi-check2-circle"></i></span>
+                        <h3>Get your files</h3>
+                        <p>Final, ready-to-use files for print or for posting online.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
         <!-- Latest work -->
-        <section id="updates" class="section">
+        <section id="updates" class="section section--soft">
             <div class="container feed__grid">
                 <div class="feed__text reveal">
                     <h2>Fresh designs, posted on <span class="gradient-text">Boss Graphix</span></h2>
@@ -253,8 +293,8 @@
                 </div>
                 <div class="latest reveal">
                     <figure class="tile"><img src="images/thumbs/pubmat/new/linggo-ng-kabataan-ml-tournament.jpg" alt="Linggo ng Kabataan ML Tournament pubmat" loading="lazy" width="900" height="900"><figcaption>Linggo ng Kabataan ML Tournament</figcaption></figure>
-                    <figure class="tile"><img src="images/pubmat/new/game-mvp.jpg" alt="Game MVP pubmat" loading="lazy" width="1080" height="1080"><figcaption>Game MVP</figcaption></figure>
-                    <figure class="tile"><img src="images/pubmat/new/ml-inter-purok-tournament.jpg" alt="Billiard Tournament pubmat" loading="lazy" width="1200" height="1200"><figcaption>ML Tournament</figcaption></figure>
+                    <figure class="tile"><img src="images/thumbs/pubmat/new/game-mvp.jpg" data-full="images/pubmat/new/game-mvp.jpg" alt="Game MVP pubmat" loading="lazy" width="640" height="640"><figcaption>Game MVP</figcaption></figure>
+                    <figure class="tile"><img src="images/thumbs/pubmat/new/ml-inter-purok-tournament.jpg" data-full="images/pubmat/new/ml-inter-purok-tournament.jpg" alt="ML Inter-Purok Tournament pubmat" loading="lazy" width="640" height="640"><figcaption>ML Tournament</figcaption></figure>
                     <figure class="tile" data-date="2026-04-26"><img src="images/thumbs/Jersey/new/2026/lcao-2026-omatikaya-clan.jpg" data-full="images/Jersey/new/2026/lcao-2026-omatikaya-clan.jpg" alt="LCAO 2026 Omatikaya Clan shirt" loading="lazy" width="480" height="480"><figcaption>LCAO 2026 — Omatikaya Clan</figcaption></figure>
                     <figure class="tile" data-date="2026-07-02"><img src="images/thumbs/Jersey/new/2026/hotshots-badminton-club.jpg" data-full="images/Jersey/new/2026/hotshots-badminton-club.jpg" alt="Hotshots Badminton Club jersey" loading="lazy" width="480" height="480"><figcaption>Hotshots Badminton Club</figcaption></figure>
                     <figure class="tile" data-date="2026-02-02"><img src="images/thumbs/Jersey/new/2026/district-5-burgos-esports.jpg" data-full="images/Jersey/new/2026/district-5-burgos-esports.jpg" alt="District 5 Burgos esports jersey" loading="lazy" width="480" height="480"><figcaption>District 5 Burgos Esports</figcaption></figure>
@@ -263,7 +303,7 @@
         </section>
 
         <!-- Videos -->
-        <section id="videos" class="section section--soft">
+        <section id="videos" class="section">
             <div class="container">
                 <div class="section-head section-head--center reveal">
                     <h2>Watch the work in motion</h2>
@@ -285,7 +325,7 @@
         </section>
 
         <!-- Contact -->
-        <section id="contact" class="section">
+        <section id="contact" class="section section--soft">
             <div class="container">
                 <div class="section-head section-head--center reveal">
                     <h2>Let's start a conversation</h2>
@@ -315,6 +355,11 @@
                     </a>
                 </div>
 
+                <div class="contact-tools reveal">
+                    <button type="button" class="btn btn--ghost" data-copy="luxcisity@gmail.com"><i class="bi bi-clipboard"></i> <span>Copy email</span></button>
+                    <a class="btn btn--ghost" href="francis-con-ui.vcf" download><i class="bi bi-person-plus"></i> Save my contact</a>
+                </div>
+
                 <a class="shop-cta reveal" href="https://luxcis7.github.io/BossGraphix/" target="_blank" rel="noopener">
                     <span class="shop-cta__logo"><img src="images/boss-graphix-logo.webp" alt="" width="2000" height="1121"></span>
                     <span class="shop-cta__text">
@@ -330,7 +375,7 @@
     <footer class="footer">
         <div class="container footer__inner">
             <a class="nav__brand" href="index.html">
-                <img src="images/boss-graphix-logo.webp" alt="Boss Graphix">
+                <img src="images/boss-graphix-logo.webp" alt="Boss Graphix" width="2000" height="1121">
             </a>
             <p class="footer__copy">&copy; <span data-year>2025</span> Francis Bernard Con-ui. All rights reserved.</p>
             <ul class="socials">
@@ -341,7 +386,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=20261031b"></script>
 </body>
 
 </html>
